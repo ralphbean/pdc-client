@@ -62,6 +62,12 @@ class GlobalComponentTestCase(CLITestCase):
              'name': 'Test Global Component %s' % x}
             for x in range(1, 26)
         ])
+        api.add_endpoint('global-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': []})
+
         with self.expect_output('global_component/list_multi_page.txt'):
             self.runner.run(['global-component', 'list',
                              '--label', 'test label'])
@@ -185,6 +191,12 @@ class GlobalComponentTestCase(CLITestCase):
 
     def test_list_json(self, api):
         api.add_endpoint('global-components', 'GET', [self.detail])
+        api.add_endpoint('global-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': []})
+
         with self.expect_output('global_component/list.json', parse_json=True):
             self.runner.run(['--json', 'global-component', 'list',
                              '--label', 'test label'])
@@ -289,6 +301,12 @@ class ReleaseComponentTestCase(CLITestCase):
              'name': 'Test Release Component %s' % x}
             for x in range(1, 26)
         ])
+        api.add_endpoint('release-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': []})
+
         with self.expect_output('release_component/list_multi_page.txt'):
             self.runner.run(['release-component', 'list',
                              '--release', 'Test Release'])
@@ -431,6 +449,12 @@ class ReleaseComponentTestCase(CLITestCase):
 
     def test_list_json(self, api):
         api.add_endpoint('release-components', 'GET', [self.detail])
+        api.add_endpoint('release-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': []})
+
         with self.expect_output('release_component/list.json', parse_json=True):
             self.runner.run(['--json', 'release-component', 'list',
                              '--release', 'test_release'])

@@ -64,8 +64,15 @@ class GlobalComponentPlugin(PDCClientPlugin):
             self.subparsers.choices.get('list').error('At least some filter must be used.')
         global_components = get_paged(self.client['global-components']._, **filters)
 
+        # TODO(xchu): this is temporary hack, should be removed after we drop the old contacts
+        global_components = list(global_components)
+        for global_component in global_components:
+            component_contacts = get_paged(self.client['global-component-contacts']._,
+                                           component=global_component['name'])
+            update_component_contacts(global_component, component_contacts)
+
         if args.json:
-            print json.dumps(list(global_components))
+            print json.dumps(global_components)
             return
 
         if global_components:
@@ -181,8 +188,16 @@ class ReleaseComponentPlugin(PDCClientPlugin):
             filters['include_inactive_release'] = True
         release_components = get_paged(self.client['release-components']._, **filters)
 
+        # TODO(xchu): this is temporary hack, should be removed after we drop the old contacts
+        release_components = list(release_components)
+        for release_component in release_components:
+            component_contacts = get_paged(self.client['release-component-contacts']._,
+                                           component=release_component['name'],
+                                           release=self._get_release_id(release_component))
+            update_component_contacts(release_component, component_contacts)
+
         if args.json:
-            print json.dumps(list(release_components))
+            print json.dumps(release_components)
             return
 
         if release_components:
