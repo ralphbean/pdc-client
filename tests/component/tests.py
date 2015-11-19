@@ -100,6 +100,7 @@ class GlobalComponentTestCase(CLITestCase):
                               })
 
     def test_update(self, api):
+        api.add_endpoint('global-components', 'GET', [self.detail])
         self._setup_detail(api)
         api.add_endpoint('global-component-contacts',
                          'GET',
@@ -120,15 +121,13 @@ class GlobalComponentTestCase(CLITestCase):
                           ]})
         api.add_endpoint('global-components/1', 'PATCH', {})
         with self.expect_output('global_component/detail.txt'):
-            self.runner.run(['global-component', 'update', '1', '--name', 'new test name'])
+            self.runner.run(['global-component', 'update', 'Test Global Component', '--name', 'new test name'])
         self.assertDictEqual(api.calls,
-                             {'global-components/1': [('PATCH', {'name': 'new test name'}),
-                                                      ('GET', {})],
+                            {
+                              'global-components': [('GET', {'name': 'Test Global Component'})],
+                              'global-components/1': [('PATCH', {'name': 'new test name'}), ('GET', {})],
                               'global-component-contacts':
-                                  [('GET',
-                                    {'component': 'Test Global Component',
-                                     'page': 1})
-                                   ]
+                                  [('GET', {'component': 'Test Global Component', 'page': 1})],
                               })
 
     def test_create(self, api):
