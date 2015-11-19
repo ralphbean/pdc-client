@@ -1,0 +1,31 @@
+[
+    {
+        "contacts": [
+            {
+                "contact": {
+                    "email": "maillist1@test.com",
+                    "id": 1,
+                    "mail_name": "maillist1"
+                },
+                "id": 1,
+                "role": "pm"
+            }
+        ],
+        "dist_git_path": null,
+        "dist_git_web_url": "http://pkgs.example.com/test_global_component",
+        "id": "1",
+        "labels": [
+            {
+                "description": "test label description",
+                "name": "test label",
+                "url": "http://example.com/lable/1"
+            }
+        ],
+        "name": "Test Global Component",
+        "upstream": {
+            "homepage": "http://test_global_component.org",
+            "scm_type": "git",
+            "scm_url": "http://test_global_component.org/git"
+        }
+    }
+]

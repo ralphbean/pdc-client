@@ -17,24 +17,6 @@ class GlobalComponentTestCase(CLITestCase):
             'name': 'Test Global Component',
             'dist_git_path': None,
             'dist_git_web_url': 'http://pkgs.example.com/test_global_component',
-            'contacts': [
-                {
-                    'url': 'http://example.com/global-components/1/contacts/1/',
-                    'contact_role': 'test_role_a',
-                    'contact': {
-                        'mail_name': 'Test Maillist',
-                        'email': 'test_mail@example.com'
-                    }
-                },
-                {
-                    'url': 'http://example.com/global-components/1/contacts/2/',
-                    'contact_role': 'test_role_b',
-                    'contact': {
-                        'username': 'Test User',
-                        'email': 'test_user@example.com'
-                    }
-                }
-            ],
             'labels': [
                 {
                     'url': 'http://example.com/lable/1',
@@ -72,8 +54,10 @@ class GlobalComponentTestCase(CLITestCase):
             self.runner.run(['global-component', 'list',
                              '--label', 'test label'])
         self.assertEqual(api.calls['global-components'],
-                         [('GET', {'page': 1, 'label': 'test label'}),
-                          ('GET', {'page': 2, 'label': 'test label'})])
+                         [('GET', {'exclude_fields': ['contacts'],
+                                   'page': 1, 'label': 'test label'}),
+                          ('GET', {'exclude_fields': ['contacts'],
+                                   'page': 2, 'label': 'test label'})])
 
     def test_detail(self, api):
         self._setup_detail(api)
@@ -201,6 +185,29 @@ class GlobalComponentTestCase(CLITestCase):
             self.runner.run(['--json', 'global-component', 'list',
                              '--label', 'test label'])
 
+    def test_list_json_with_contacts(self, api):
+        api.add_endpoint('global-components', 'GET', [self.detail])
+        api.add_endpoint('global-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': [
+                              {
+                                  'id': 1,
+                                  'component': 'Test Global Component',
+                                  'role': 'pm',
+                                  'contact': {
+                                      'id': 1,
+                                      'mail_name': 'maillist1',
+                                      'email': 'maillist1@test.com'
+                                  }
+                              }
+                          ]})
+
+        with self.expect_output('global_component/list_with_contacts.json', parse_json=True):
+            self.runner.run(['--json', 'global-component', 'list',
+                             '--label', 'test label', '--with-contacts'])
+
 
 class ReleaseComponentTestCase(CLITestCase):
     def setUp(self):
@@ -220,25 +227,7 @@ class ReleaseComponentTestCase(CLITestCase):
             'dist_git_web_url': 'http://pkgs.example.com/test_release_component',
             'active': True,
             'type': 'rpm',
-            'srpm': None,
-            'contacts': [
-                {
-                    'url': 'http://example.com/release-components/1/contacts/1/',
-                    'contact_role': 'test_role_a',
-                    'contact': {
-                        'mail_name': 'Test Maillist',
-                        'email': 'test_mail@example.com'
-                    }
-                },
-                {
-                    'url': 'http://example.com/release-components/1/contacts/2/',
-                    'contact_role': 'test_role_b',
-                    'contact': {
-                        'username': 'Test User',
-                        'email': 'test_user@example.com'
-                    }
-                }
-            ]
+            'srpm': None
         }
 
     def _setup_detail(self, api):
@@ -264,25 +253,7 @@ class ReleaseComponentTestCase(CLITestCase):
                     'dist_git_web_url': 'http://pkgs.example.com/test_release_component',
                     'active': True,
                     'type': 'rpm',
-                    'srpm': None,
-                    'contacts': [
-                        {
-                            'url': 'http://example.com/release-components/1/contacts/1/',
-                            'contact_role': 'test_role_a',
-                            'contact': {
-                                'mail_name': 'Test Maillist',
-                                'email': 'test_mail@example.com'
-                            }
-                        },
-                        {
-                            'url': 'http://example.com/release-components/1/contacts/2/',
-                            'contact_role': 'test_role_b',
-                            'contact': {
-                                'username': 'Test User',
-                                'email': 'test_user@example.com'
-                            }
-                        }
-                    ]
+                    'srpm': None
                 }
             ]
         }
@@ -311,8 +282,10 @@ class ReleaseComponentTestCase(CLITestCase):
             self.runner.run(['release-component', 'list',
                              '--release', 'Test Release'])
         self.assertEqual(api.calls['release-components'],
-                         [('GET', {'page': 1, 'release': 'Test Release'}),
-                          ('GET', {'page': 2, 'release': 'Test Release'})])
+                         [('GET', {'exclude_fields': ['contacts'],
+                                   'page': 1, 'release': 'Test Release'}),
+                          ('GET', {'exclude_fields': ['contacts'],
+                                   'page': 2, 'release': 'Test Release'})])
 
     def test_detail(self, api):
         api.add_endpoint('release-component-contacts',
@@ -458,3 +431,30 @@ class ReleaseComponentTestCase(CLITestCase):
         with self.expect_output('release_component/list.json', parse_json=True):
             self.runner.run(['--json', 'release-component', 'list',
                              '--release', 'test_release'])
+
+    def test_list_json_with_contacts(self, api):
+        api.add_endpoint('release-components', 'GET', [self.detail])
+        api.add_endpoint('release-component-contacts', 'GET',
+                         {'count': 0,
+                          'next': None,
+                          'previous': None,
+                          'results': [
+                              {
+                                  'id': 1,
+                                  'component': {
+                                      'release': 'test_release',
+                                      'id': 1,
+                                      'name': 'Test Release Component'
+                                  },
+                                  'role': 'pm',
+                                  'contact': {
+                                      'id': 1,
+                                      'mail_name': 'maillist1',
+                                      'email': 'maillist1@test.com'
+                                  }
+                              }
+                          ]})
+
+        with self.expect_output('release_component/list_with_contacts.json', parse_json=True):
+            self.runner.run(['--json', 'release-component', 'list',
+                             '--release', 'test_release', '--with-contacts'])

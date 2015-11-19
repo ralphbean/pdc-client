@@ -32,6 +32,9 @@ class GlobalComponentPlugin(PDCClientPlugin):
                    'upstream_scm_url'.split())
         for arg in filters:
             list_parser.add_argument('--' + arg.replace('_', '-'), dest='filter_' + arg)
+        list_parser.add_argument('--with-contacts', action='store_true', dest='with_contacts',
+                                 help=('include contacts information in the result, '
+                                       '*ONLY* works with --json provided.'))
         list_parser.set_defaults(func=self.list_global_components)
 
         info_parser = self.add_action('info', help='display details of a global component')
@@ -62,17 +65,26 @@ class GlobalComponentPlugin(PDCClientPlugin):
         filters = extract_arguments(args, prefix='filter_')
         if not filters:
             self.subparsers.choices.get('list').error('At least some filter must be used.')
-        global_components = get_paged(self.client['global-components']._, **filters)
-
-        # TODO(xchu): this is temporary hack, should be removed after we drop the old contacts
-        global_components = list(global_components)
-        for global_component in global_components:
-            component_contacts = get_paged(self.client['global-component-contacts']._,
-                                           component=global_component['name'])
-            update_component_contacts(global_component, component_contacts)
+        # TODO(xchu): this is temporary hack,
+        #             should be updated after we drop the old contacts
+        if args.with_contacts:
+            if not args.json:
+                self.subparsers.choices.get('list').error(
+                    '--with-contacts can only work with --json')
+            global_components = get_paged(self.client['global-components']._,
+                                          **filters)
+            global_components = list(global_components)
+            for global_component in global_components:
+                component_contacts = get_paged(self.client['global-component-contacts']._,
+                                               component=global_component['name'])
+                update_component_contacts(global_component, component_contacts)
+        else:
+            global_components = get_paged(self.client['global-components']._,
+                                          exclude_fields=['contacts'],
+                                          **filters)
 
         if args.json:
-            print json.dumps(global_components)
+            print json.dumps(list(global_components))
             return
 
         if global_components:
@@ -144,6 +156,9 @@ class ReleaseComponentPlugin(PDCClientPlugin):
                    'type'.split())
         for arg in filters:
             list_parser.add_argument('--' + arg.replace('_', '-'), dest='filter_' + arg)
+        list_parser.add_argument('--with-contacts', action='store_true', dest='with_contacts',
+                                 help=('include contacts information in the result, '
+                                       '*ONLY* works with --json provided.'))
         list_parser.set_defaults(func=self.list_release_components)
 
         info_parser = self.add_action('info', help='display details of a release component')
@@ -186,18 +201,27 @@ class ReleaseComponentPlugin(PDCClientPlugin):
             self.subparsers.choices.get('list').error('At least some filter must be used.')
         if 'include_inactive_release' in args and args.include_inactive_release:
             filters['include_inactive_release'] = True
-        release_components = get_paged(self.client['release-components']._, **filters)
-
-        # TODO(xchu): this is temporary hack, should be removed after we drop the old contacts
-        release_components = list(release_components)
-        for release_component in release_components:
-            component_contacts = get_paged(self.client['release-component-contacts']._,
-                                           component=release_component['name'],
-                                           release=self._get_release_id(release_component))
-            update_component_contacts(release_component, component_contacts)
+        # TODO(xchu): this is temporary hack,
+        #             should be updated after we drop the old contacts
+        if args.with_contacts:
+            if not args.json:
+                self.subparsers.choices.get('list').error(
+                    '--with-contacts can only work with --json')
+            release_components = get_paged(self.client['release-components']._,
+                                           **filters)
+            release_components = list(release_components)
+            for release_component in release_components:
+                component_contacts = get_paged(self.client['release-component-contacts']._,
+                                               component=release_component['name'],
+                                               release=self._get_release_id(release_component))
+                update_component_contacts(release_component, component_contacts)
+        else:
+            release_components = get_paged(self.client['release-components']._,
+                                           exclude_fields=['contacts'],
+                                           **filters)
 
         if args.json:
-            print json.dumps(release_components)
+            print json.dumps(list(release_components))
             return
 
         if release_components:
