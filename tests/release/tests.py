@@ -100,7 +100,7 @@ class ReleaseTestCase(CLITestCase):
         self._setup_release_detail(api)
         with self.expect_output('detail.txt'):
             self.runner.run(['release', 'clone', 'old_release_id', '--version', '1.0',
-                             '--include-trees', 'tree-a', '--include-trees', 'tree-b'])
+                             '--include-trees', 'tree-a', 'tree-b'])
         self.assertDictEqual(api.calls,
                              {'rpc/release/clone': [('POST',
                                                      {'old_release_id': 'old_release_id',
